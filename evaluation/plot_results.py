@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 df = pd.read_csv(
     "results/metrics.csv"
 )
+df["wer_percent"] = df["wer"] * 100
 
 # Latency
 
@@ -31,11 +32,11 @@ plt.figure(figsize=(8,5))
 
 plt.bar(
     df["model"],
-    df["wer"]
+    df["wer_percent"]
 )
 
 plt.title("WER Comparison")
-plt.ylabel("WER")
+plt.ylabel("WER (%)")
 
 plt.tight_layout()
 
@@ -51,7 +52,7 @@ plt.figure(figsize=(8,5))
 
 plt.scatter(
     df["avg_latency_sec"],
-    df["wer"]
+    df["wer_percent"]
 )
 
 for _, row in df.iterrows():
@@ -60,12 +61,12 @@ for _, row in df.iterrows():
         row["model"],
         (
             row["avg_latency_sec"],
-            row["wer"]
+            row["wer_percent"]
         )
     )
 
 plt.xlabel("Latency (sec)")
-plt.ylabel("WER")
+plt.ylabel("WER (%)")
 
 plt.title("Latency vs Accuracy")
 
