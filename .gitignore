@@ -31,9 +31,9 @@ temp/
 tmp/
 
 #Datasets
-datasets/
+dataset/
 
-#Predictions
+#Predictions outputs
 results/predictions/
 
 # Generated Plot Images (optional)
