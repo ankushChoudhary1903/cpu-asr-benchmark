@@ -191,6 +191,31 @@ cpu-asr-benchmark/
 
 ---
 
+## Reproducibility
+
+1. Download LibriSpeech Test-Clean
+2. Place dataset under:
+
+dataset/LibriSpeech/test-clean/
+
+3. Install dependencies:
+
+pip install -r requirements.txt
+
+4. Run:
+
+python runners/baseline_runner.py
+python runners/quantized_runner.py
+python runners/distilled_runner.py
+
+5. Evaluate:
+
+python evaluation/wer_evaluator.py
+python evaluation/aggregate_metrics.py
+python evaluation/plot_results.py
+
+---
+
 ## Future Improvements
 
 - Multi-thread CPU benchmarking
