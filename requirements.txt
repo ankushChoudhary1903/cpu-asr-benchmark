@@ -1,0 +1,9 @@
+pandas
+numpy
+jiwer
+faster-whisper
+matplotlib
+seaborn
+psutil
+datasets
+soundfile
