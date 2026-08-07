@@ -162,31 +162,21 @@ This normalization ensures that formatting differences do not unfairly penalize 
 
 ## Benchmark Results
 
+### Latency vs Accuracy Tradeoff
+
+![alt text](image.png)
+
 ### Latency Comparison
 
-results/plots/latency_comparison.png
+![alt text](image-1.png)
 
 ### WER Comparison
 
-results/plots/wer_comparison.png
-
-### Latency vs Accuracy Tradeoff
-
-results/plots/tradeoff_curve.png
+![alt text](image-2.png)
 
 ---
 
-## Relative Model Size
-
-| Model     | Relative Size |
-| --------- | ------------: |
-| Baseline  |          1.0x |
-| INT8      |  ~0.25x-0.50x |
-| Distilled |        ~0.50x |
-
----
-
-## Generated Artifacts
+## Output
 
 The benchmark produces:
 
