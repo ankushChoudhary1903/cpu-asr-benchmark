@@ -16,24 +16,58 @@ The benchmark simulates a production scenario where GPU infrastructure is unavai
 
 ## Highlights
 
-- Benchmarked ~2,620 LibriSpeech test-clean utterances.
+- Benchmarked ~2,620 utterances from LibriSpeech Test-Clean.
 - Evaluated baseline, quantized, and distilled Whisper variants.
 - Measured latency, throughput, Real-Time Factor (RTF), and Word Error Rate (WER).
-- Implemented checkpointing and resume support for long-running benchmarks.
-- Identified the optimal CPU deployment tradeoff for production inference.
+- Implemented checkpoint/resume support for long-running benchmark runs.
+- Compared quantization and distillation as two optimization strategies for CPU inference.
+- Identified the optimal production deployment strategy for CPU-only ASR workloads.
 
 ---
 
-## Objective
+## Final Results
 
-Identify the best accuracy-per-latency tradeoff for production-scale CPU inference.
+| Model     | Avg Latency (s) | Throughput (utt/sec) | Avg RTF |   WER |
+| --------- | --------------: | -------------------: | ------: | ----: |
+| Baseline  |           1.551 |                0.645 |   0.280 | 5.76% |
+| INT8      |           1.385 |                0.722 |   0.256 | 5.96% |
+| Distilled |           3.328 |                0.301 |   0.618 | 5.02% |
 
-Questions investigated:
+### Key Takeaway
 
-- How much latency improvement does INT8 quantization provide?
-- How much transcription accuracy is sacrificed?
-- Does model distillation provide a better tradeoff than quantization?
-- Which model should be deployed under CPU constraints?
+INT8 quantization reduced latency by approximately **10.7%** and increased throughput by approximately **12%** while incurring only **0.20% absolute WER degradation**, making it the best latency-accuracy tradeoff for CPU-only deployment.
+
+---
+
+## Benchmark Pipeline
+
+```text
+LibriSpeech Test-Clean
+        │
+        ▼
+ Model Variant Loader
+(Baseline / INT8 / Distilled)
+        │
+        ▼
+ CPU Inference Runner
+        │
+        ├── Latency
+        ├── Throughput
+        ├── RTF
+        └── Predictions
+        │
+        ▼
+   WER Evaluation
+        │
+        ▼
+ Results Aggregation
+        │
+        ▼
+  Plots + Analysis
+        │
+        ▼
+ Production Recommendation
+```
 
 ---
 
@@ -50,9 +84,9 @@ Characteristics:
 - Approximately 2,620 audio utterances
 - Multiple speakers
 - Human-verified transcripts
-- Fixed evaluation set used across all experiments
+- Fixed evaluation dataset across all experiments
 
-This dataset remained unchanged across all benchmark runs to ensure fair comparison.
+This dataset remained unchanged across all benchmark runs to ensure fair model comparison.
 
 ---
 
@@ -67,7 +101,7 @@ Device            : CPU
 Dataset           : LibriSpeech Test-Clean
 ```
 
-Models Evaluated:
+Models evaluated:
 
 ### Baseline
 
@@ -96,7 +130,7 @@ CPU Only
 
 ## Metrics
 
-The following metrics were collected.
+The following evaluation metrics were collected.
 
 ### Latency
 
@@ -104,7 +138,7 @@ Average inference time per utterance.
 
 ### Throughput
 
-Utterances processed per second.
+Number of utterances processed per second.
 
 ### Real-Time Factor (RTF)
 
@@ -116,31 +150,39 @@ Lower values indicate faster inference.
 
 ### Word Error Rate (WER)
 
-Calculated using JiWER after:
+WER was calculated using JiWER after:
 
 - Lowercasing
 - Punctuation removal
 - Whitespace normalization
 
+This normalization ensures that formatting differences do not unfairly penalize transcription quality.
+
 ---
 
-## Results
+## Benchmark Results
 
-| Model | Avg Latency (s) | Throughput (utt/sec) | Avg RTF | WER |
-|---------|---------:|---------:|---------:|---------:|
-| Baseline | 1.551 | 0.645 | 0.280 | 5.76% |
-| INT8 | 1.385 | 0.722 | 0.256 | 5.96% |
-| Distilled | 3.328 | 0.301 | 0.618 | 5.02% |
+### Latency Comparison
+
+results/plots/latency_comparison.png
+
+### WER Comparison
+
+results/plots/wer_comparison.png
+
+### Latency vs Accuracy Tradeoff
+
+results/plots/tradeoff_curve.png
 
 ---
 
 ## Relative Model Size
 
-| Model | Relative Size |
-|---------|---------:|
-| Baseline | 1.0x |
-| INT8 | ~0.25x-0.50x |
-| Distilled | ~0.50x |
+| Model     | Relative Size |
+| --------- | ------------: |
+| Baseline  |          1.0x |
+| INT8      |  ~0.25x-0.50x |
+| Distilled |        ~0.50x |
 
 ---
 
@@ -148,11 +190,13 @@ Calculated using JiWER after:
 
 The benchmark produces:
 
-- Transcription outputs for each model
-- Aggregate evaluation metrics
-- WER reports
-- Latency comparison plots
+- Model transcription outputs
+- Per-utterance latency measurements
+- Aggregate benchmark metrics
+- WER evaluation reports
+- Latency comparison charts
 - Accuracy-vs-latency tradeoff visualizations
+- Final deployment recommendation
 
 ---
 
@@ -160,13 +204,13 @@ The benchmark produces:
 
 ### INT8 Quantization
 
-Compared to the FP32 baseline:
+Compared with the FP32 baseline:
 
 - ~10.7% lower latency
 - ~12% higher throughput
 - Only ~0.20% WER degradation
 
-This provided the best latency-to-accuracy tradeoff.
+This delivered the strongest latency-to-accuracy tradeoff.
 
 ### Distillation
 
@@ -178,10 +222,10 @@ WER = 5.02%
 
 However:
 
-- Inference latency increased significantly
+- Latency increased significantly
 - Throughput decreased substantially
 
-On the evaluated hardware, distillation did not provide the expected deployment benefits compared to quantized inference.
+On the tested hardware, distillation did not provide the expected deployment advantage over quantized inference.
 
 ---
 
@@ -193,15 +237,15 @@ For CPU-only production deployment:
 Whisper Base INT8
 ```
 
-is the preferred option because it provides:
+is the preferred model because it provides:
 
 - Lower latency
 - Higher throughput
-- Nearly identical transcription accuracy
+- Near-identical transcription quality
 
 while requiring fewer computational resources.
 
-Although Distil-Whisper achieved the lowest WER (5.02%), INT8 quantization delivered significantly lower latency (1.385s vs. 3.328s) while maintaining comparable accuracy. Therefore, INT8 Whisper Base offers the best latency-accuracy tradeoff for CPU-only deployment.
+Although Distil-Whisper achieved the lowest WER (5.02%), INT8 quantization delivered substantially better runtime performance while maintaining comparable accuracy.
 
 ---
 
@@ -219,10 +263,19 @@ cpu-asr-benchmark/
 │   └── wer_evaluator.py
 │
 ├── results/
-│   ├── metrics.csv
-│   ├── wer_results.csv
+│   ├── plots/
+│   │   ├── latency_comparison.png
+│   │   ├── tradeoff_curve.png
+│   │   └── wer_comparison.png
+│   │
+│   ├── predictions/
+│   │   ├── baseline.csv
+│   │   ├── distilled.csv
+│   │   └── int8.csv
+│   │
 │   ├── final_summary.md
-│   └── plots/
+│   ├── metrics.csv
+│   └── wer_results.csv
 │
 ├── runners/
 │   ├── baseline_runner.py
@@ -291,11 +344,9 @@ python evaluation/plot_results.py
 ## Future Improvements
 
 - Multi-thread CPU benchmarking
-- Memory consumption analysis
-- Multilingual evaluation
-- Streaming ASR benchmarking
-- Real-time deployment testing
 - CPU thread scaling analysis
-- Dockerized deployment benchmarking
-
----
+- Memory consumption profiling
+- Streaming ASR benchmarking
+- Multilingual evaluation
+- Dockerized benchmarking pipeline
+- Production deployment benchmarking
